@@ -22,6 +22,4 @@ public class TypeBuilder {
         _on.getCalls().add(callBuilder._call);
     }
 
-    // field() return this, takes a callBuilder unless inner field type is scalar or enum with no args
-
 }
