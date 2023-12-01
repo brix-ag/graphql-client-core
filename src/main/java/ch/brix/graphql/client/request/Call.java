@@ -1,8 +1,7 @@
-package ch.brix.graphQL.client.request;
+package ch.brix.graphql.client.request;
 
 import lombok.*;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;

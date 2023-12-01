@@ -1,4 +1,4 @@
-package ch.brix.graphQL.client.request;
+package ch.brix.graphql.client.request;
 
 import java.util.HashMap;
 import java.util.Map;
