@@ -1,4 +1,4 @@
-package ch.brix.graphql.client.request;
+package ch.brix.gql.client;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;

@@ -1,4 +1,4 @@
-package ch.brix.graphql.client.request;
+package ch.brix.gql.client;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

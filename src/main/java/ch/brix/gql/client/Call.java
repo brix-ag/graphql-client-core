@@ -1,6 +1,9 @@
-package ch.brix.graphql.client.request;
+package ch.brix.gql.client;
 
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Map;

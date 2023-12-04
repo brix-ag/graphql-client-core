@@ -1,4 +1,4 @@
-package ch.brix.graphql.client.request;
+package ch.brix.gql.client;
 
 import java.util.List;
 import java.util.Map;

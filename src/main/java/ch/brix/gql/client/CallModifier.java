@@ -1,4 +1,4 @@
-package ch.brix.graphql.client.request;
+package ch.brix.gql.client;
 
 /**
  * Used to modify package private 'call' field that should not be made public.
