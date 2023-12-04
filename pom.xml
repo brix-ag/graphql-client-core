@@ -8,7 +8,7 @@
   <packaging>jar</packaging>
 
   <name>GraphQL Client Core</name>
-  <description>Core for all GraphQL clients by brix.</description>
+  <description>Core for all GraphQL clients by brix</description>
   <url>https://github.com/brix-ag/graphql-client-core</url>
 
   <licenses>
@@ -114,15 +114,6 @@
           <serverId>ossrh</serverId>
           <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
           <autoReleaseAfterClose>true</autoReleaseAfterClose>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.11.0</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
         </configuration>
       </plugin>
     </plugins>
