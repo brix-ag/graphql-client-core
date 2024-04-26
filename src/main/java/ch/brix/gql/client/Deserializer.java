@@ -55,20 +55,20 @@ public class Deserializer {
     private static Object deserialize(JsonElement json, Call call, TypeRegistry typeRegistry) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (json.isJsonNull())
             return null;
+        Class type = typeRegistry.getType(call.getInnerReturnType());
+        if (type != null && Scalar.class.isAssignableFrom(type))
+            return type.getDeclaredMethod("of", Object.class).invoke(null, json.isJsonPrimitive() ? json.getAsString() : json.toString());
         if (json.isJsonArray())
             return deserializeList(json.getAsJsonArray(), call, typeRegistry);
         if (json.isJsonPrimitive()) {
-            Class type = typeRegistry.getType(call.getInnerReturnType());
             if (type == null)
                 throw new RuntimeException("Unknown type " + call.getInnerReturnType());
             if (type.isEnum())
                 return Enum.valueOf(type, json.getAsString());
-            if (Scalar.class.isAssignableFrom(type))
-                return type.getDeclaredConstructor(String.class).newInstance(json.getAsString());
             throw new RuntimeException("Json primitive is not enum and not scalar");
         }
         JsonObject obj = json.getAsJsonObject();
-        Class type = typeRegistry.getType(obj.get("__typename").getAsString());
+        type = typeRegistry.getType(obj.get("__typename").getAsString());
         if (type == null)
             type = typeRegistry.getType(call.getInnerReturnType());
         return getObject(type, typeRegistry, obj);
@@ -77,6 +77,8 @@ public class Deserializer {
     private static Object deserialize(JsonElement json, Class<?> type, TypeRegistry typeRegistry) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (json.isJsonNull())
             return null;
+        if (Scalar.class.isAssignableFrom(type))
+            return type.getDeclaredMethod("of", Object.class).invoke(null, json.isJsonPrimitive() ? json.getAsString() : json.toString());
         if (json.isJsonArray()) {
             List ret = new ArrayList(json.getAsJsonArray().size());
             for (JsonElement element : json.getAsJsonArray())
@@ -86,8 +88,6 @@ public class Deserializer {
         if (json.isJsonPrimitive()) {
             if (type.isEnum())
                 return Enum.valueOf((Class<? extends Enum>) type, json.getAsString());
-            if (Scalar.class.isAssignableFrom(type))
-                return type.getDeclaredMethod("of", Object.class).invoke(null, json.getAsString());
             throw new RuntimeException("Json primitive is not enum or scalar");
         }
         // object
@@ -98,6 +98,8 @@ public class Deserializer {
     }
 
     private static Object getObject(Class<?> type, TypeRegistry typeRegistry, JsonObject obj) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        if (Scalar.class.isAssignableFrom(type))
+            return type.getDeclaredMethod("of", Object.class).invoke(null, obj.toString());
         Object ret = type.getDeclaredConstructor().newInstance();
         for (Field field : type.getDeclaredFields()) {
             SerializedName serializedName = field.getDeclaredAnnotation(SerializedName.class);
