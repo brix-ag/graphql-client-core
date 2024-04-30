@@ -1,6 +1,5 @@
 package ch.brix.gql.client;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
@@ -55,16 +54,20 @@ public class Deserializer {
     private static Object deserialize(JsonElement json, Call call, TypeRegistry typeRegistry) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (json.isJsonNull())
             return null;
-        if (json.isJsonArray())
-            return deserializeList(json.getAsJsonArray(), call, typeRegistry);
-        if (json.isJsonPrimitive()) {
+        if (json.isJsonArray()) { // shouldn't happen
+            List list = new ArrayList();
+            for (JsonElement element : json.getAsJsonArray())
+                list.add(deserialize(element, call, typeRegistry));
+            return list;
+        }
+        if (json.isJsonPrimitive()) { // shouldn't happen
             Class type = typeRegistry.getType(call.getInnerReturnType());
             if (type == null)
                 throw new RuntimeException("Unknown type " + call.getInnerReturnType());
             if (type.isEnum())
                 return Enum.valueOf(type, json.getAsString());
             if (Scalar.class.isAssignableFrom(type))
-                return type.getDeclaredConstructor(String.class).newInstance(json.getAsString());
+                return type.getDeclaredMethod("of", Object.class).invoke(null, json.getAsString());
             throw new RuntimeException("Json primitive is not enum and not scalar");
         }
         JsonObject obj = json.getAsJsonObject();
@@ -74,13 +77,13 @@ public class Deserializer {
         return getObject(type, typeRegistry, obj);
     }
 
-    private static Object deserialize(JsonElement json, Class<?> type, TypeRegistry typeRegistry) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    private static Object deserialize(JsonElement json, Class<?> type, TypeRegistry typeRegistry, boolean isList) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
         if (json.isJsonNull())
             return null;
-        if (json.isJsonArray()) {
+        if (json.isJsonArray() && isList) {
             List ret = new ArrayList(json.getAsJsonArray().size());
             for (JsonElement element : json.getAsJsonArray())
-                ret.add(deserialize(element, type, typeRegistry));
+                ret.add(deserialize(element, type, typeRegistry, false));
             return ret;
         }
         if (json.isJsonPrimitive()) {
@@ -90,6 +93,8 @@ public class Deserializer {
                 return type.getDeclaredMethod("of", Object.class).invoke(null, json.getAsString());
             throw new RuntimeException("Json primitive is not enum or scalar");
         }
+        if (Scalar.class.isAssignableFrom(type)) // object and array scalars
+            return type.getDeclaredMethod("of", Object.class).invoke(null, json.toString());
         // object
         JsonObject obj = json.getAsJsonObject();
         if (obj.has("__typename"))
@@ -106,17 +111,10 @@ public class Deserializer {
                 String setterName = "set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1);
                 Method setter = type.getDeclaredMethod(setterName, field.getType());
                 InnerType innerType = field.getDeclaredAnnotation(InnerType.class);
-                setter.invoke(ret, deserialize(value, innerType == null ? field.getType() : innerType.value(), typeRegistry));
+                setter.invoke(ret, deserialize(value, innerType == null ? field.getType() : innerType.value(), typeRegistry, innerType != null));
             }
         }
         return ret;
-    }
-
-    private static Object deserializeList(JsonArray arr, Call call, TypeRegistry typeRegistry) throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        List list = new ArrayList();
-        for (JsonElement element : arr)
-            list.add(deserialize(element, call, typeRegistry));
-        return list;
     }
 
 }
