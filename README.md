@@ -60,3 +60,7 @@ In the base package are two classes `Query` and `Mutation` with static methods t
        ...
    })
     ```
+   
+# Release Nodes
+
+- 1.4: added ThrottledClient
