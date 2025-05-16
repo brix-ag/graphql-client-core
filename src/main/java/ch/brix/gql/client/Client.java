@@ -5,12 +5,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.Call;
 import okhttp3.*;
+import okhttp3.Call;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.rmi.RemoteException;
 
 /**
  * Base for GraphQL clients.
@@ -41,9 +40,13 @@ public class Client {
                 if (response.body() != null) {
                     String rspns = response.body().string();
                     log.debug(rspns);
-                    Deserializer.deserializeResult(JsonParser.parseString(rspns), callBuilder._call, typeRegistry);
+                    try {
+                        Deserializer.deserializeResult(JsonParser.parseString(rspns), callBuilder._call, typeRegistry);
+                    } catch (Exception e) {
+                        throw new HttpException(response.code(), e.getMessage());
+                    }
                 }
-                throw new RemoteException("Request failed with code = " + response.code() + " and message: " + response.message());
+                throw new HttpException(response.code(), "Request failed with code = " + response.code() + " and message: " + response.message());
             }
             if (response.body() == null)
                 return null;
